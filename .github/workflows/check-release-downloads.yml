@@ -1,0 +1,33 @@
+name: Check release downloads
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-amd64:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check release dependency URLs
+        shell: bash
+        run: |
+          failed=0
+          while IFS= read -r url; do
+            echo "Checking: $url"
+            if ! wget --spider --server-response --timeout=30 --tries=2 "$url"; then
+              echo "::error::Download unavailable: $url"
+              failed=1
+            fi
+          done <<'URLS'
+          https://github.com/XTLS/Xray-core/releases/download/v26.10.10/Xray-linux-64.zip
+          https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
+          https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
+          https://github.com/chocolate4u/Iran-v2ray-rules/releases/latest/download/geoip.dat
+          https://github.com/chocolate4u/Iran-v2ray-rules/releases/latest/download/geosite.dat
+          https://github.com/runetfreedom/russia-v2ray-rules-dat/releases/latest/download/geoip.dat
+          https://github.com/runetfreedom/russia-v2ray-rules-dat/releases/latest/download/geosite.dat
+          URLS
+          exit "$failed"
